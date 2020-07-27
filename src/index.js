@@ -15,8 +15,15 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
 
+    io.emit('welcome', 'Welecome!')
+    socket.broadcast.emit('welcome', 'A new user has joined')
     socket.on('sendMessage', (message) => {
         io.emit('message', message)
+    })
+
+
+    socket.on('disconnect', ()=>{
+        io.emit('welcome', 'A user has left the chat')
     })
 })
 
