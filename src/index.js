@@ -21,6 +21,12 @@ io.on('connection', (socket) => {
         io.emit('message', message)
     })
 
+    socket.on('send-location', (postion)=>{
+        //io.emit('message', ({location: postion.latitude + ',' +postion.longitude}))
+        io.emit('message', ('https://google.com/mapgs?q='+postion.latitude + ',' +postion.longitude))
+    })
+
+   
 
     socket.on('disconnect', ()=>{
         io.emit('welcome', 'A user has left the chat')
