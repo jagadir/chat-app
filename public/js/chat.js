@@ -8,17 +8,23 @@ const $sendLocationButton = document.querySelector('#send-location')
 const $messages = document.querySelector('#messages')
 
 //templages 
-const messageTemplate = document.querySelector('#message-template').innerHTML
-
+const $messageTemplate = document.querySelector('#message-template').innerHTML
+const $locationTemplate = document.querySelector('#location-template').innerHTML
 
 socket.on('message', (message) => {
-    console.log(message)
-    const html = Mustache.render(messageTemplate, {
+    const html = Mustache.render($messageTemplate, {
         message
     })
     $messages.insertAdjacentHTML('beforeend', html)
 })
 
+socket.on('location', (url) => {
+   // console.log(message)
+    const html = Mustache.render($locationTemplate, {
+        url
+    })
+    $messages.insertAdjacentHTML('beforeend', html)
+})
 
 $messageForm.addEventListener('submit', (e) => {
     e.preventDefault()
@@ -29,7 +35,7 @@ $messageForm.addEventListener('submit', (e) => {
     socket.emit('sendMessage', msg, (error) => {
         //enable
         $messageFormButton.removeAttribute('disabled')
-        $messageFormInput.value=''
+        $messageFormInput.value = ''
         $messageFormInput.focus()
 
         if (error) {
@@ -47,12 +53,14 @@ $sendLocationButton.addEventListener('click', () => {
     $sendLocationButton.setAttribute('disabled', 'disabled')
     navigator.geolocation.getCurrentPosition((position) => {
         socket.emit('send-location', {
-            latitude: position.coords.longitude,
+            latitude: position.coords.latitude,
             longitude: position.coords.longitude
-        },()=>{
+        }, () => {
             $sendLocationButton.removeAttribute('disabled')
             console.log('location shared!')
         })
     })
 
 })
+
+

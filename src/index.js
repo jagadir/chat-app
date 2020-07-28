@@ -30,13 +30,11 @@ io.on('connection', (socket) => {
         callback(' successfully')
     })
 
-    socket.on('send-location', (postion, callback)=>{
+    socket.on('send-location', (position, callback)=>{
         //io.emit('message', ({location: postion.latitude + ',' +postion.longitude}))
-        io.emit('message', ('https://google.com/mapgs?q='+postion.latitude + ',' +postion.longitude))
+        io.emit('location', ('https://google.com/maps?q='+position.latitude + ',' +position.longitude))
         callback()
     })
-
-   
 
     socket.on('disconnect', ()=>{
         io.emit('welcome', 'A user has left the chat')
