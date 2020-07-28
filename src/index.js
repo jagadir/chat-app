@@ -30,10 +30,10 @@ io.on('connection', (socket) => {
         callback(' successfully')
     })
 
-    socket.on('send-location', (postion)=>{
+    socket.on('send-location', (postion, callback)=>{
         //io.emit('message', ({location: postion.latitude + ',' +postion.longitude}))
         io.emit('message', ('https://google.com/mapgs?q='+postion.latitude + ',' +postion.longitude))
-        
+        callback()
     })
 
    
