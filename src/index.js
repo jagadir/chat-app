@@ -15,15 +15,18 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
 
-    io.emit('welcome', 'Welecome!')
-    socket.broadcast.emit('welcome', 'A new user has joined')
-    socket.on('sendMessage', (message) => {
+    // io.emit('welcome', 'Welecome!')
+    // socket.broadcast.emit('welcome', 'A new user has joined')
+   
+    socket.on('sendMessage', (message, callback) => {
         io.emit('message', message)
+        callback(' successfully')
     })
 
     socket.on('send-location', (postion)=>{
         //io.emit('message', ({location: postion.latitude + ',' +postion.longitude}))
         io.emit('message', ('https://google.com/mapgs?q='+postion.latitude + ',' +postion.longitude))
+        
     })
 
    

@@ -11,7 +11,10 @@ document.querySelector('#message-form').addEventListener('submit', (e)=>{
     e.preventDefault()
    // var msg = document.querySelector('input').value
    var msg = e.target.elements.message.value 
-   socket.emit('sendMessage', msg)
+   socket.emit('sendMessage', msg, (ackMessage)=>{
+       console.log('the message was delivered' + ackMessage)
+   })
+
 })
 
 document.querySelector('#send-location').addEventListener('click', ()=>{
@@ -22,9 +25,10 @@ document.querySelector('#send-location').addEventListener('click', ()=>{
 
     navigator.geolocation.getCurrentPosition((position)=>{
         socket.emit('send-location', {
-            position: 'test',
             latitude: position.coords.longitude,
             longitude: position.coords.longitude
         })
+        
+        
     })
 })
