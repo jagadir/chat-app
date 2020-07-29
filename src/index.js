@@ -3,7 +3,7 @@ const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
 const Filter = require('bad-words')
-
+const {generateMessage} = require('./utils/messages')
 const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
@@ -15,8 +15,7 @@ app.use(express.static(publicDirectoryPath))
 
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
-
-     io.emit('message', 'Welecome!')
+     io.emit('message', generateMessage('Welecome!'))
     // socket.broadcast.emit('welcome', 'A new user has joined')
    
     socket.on('sendMessage', (message, callback) => {
@@ -26,13 +25,13 @@ io.on('connection', (socket) => {
             return callback('profinity is not allowed')
         }
 
-        io.emit('message', message)
+        io.emit('message', generateMessage(message))
         callback(' successfully')
     })
 
     socket.on('send-location', (position, callback)=>{
         //io.emit('message', ({location: postion.latitude + ',' +postion.longitude}))
-        io.emit('location', ('https://google.com/maps?q='+position.latitude + ',' +position.longitude))
+        io.emit('location', generateMessage('https://google.com/maps?q='+position.latitude + ',' +position.longitude))
         callback()
     })
 
