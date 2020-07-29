@@ -34,6 +34,11 @@ io.on('connection', (socket) => {
         callback()
     })
 
+    socket.on('join', ({username, room})=>{
+        socket.join(room)
+        socket.to(room).emit('message', generateMessage('Welecome!'))
+        socket.broadcast.to(room).emit('message', generateMessage( username + ' has joined'))
+    })
     socket.on('disconnect', ()=>{
         io.emit('quit', generateMessage('A user has left the chat'))
     })
