@@ -21,7 +21,6 @@ const addUser = ({id, username, room})=>{
     //validate username
     if(existingUser)
     {
-        console.log(username + ' User is in use')
         return {error: 'User is in use'}
     }
 
@@ -29,15 +28,48 @@ const addUser = ({id, username, room})=>{
     const user = {id, username, room}
     users.push(user)
     return {users}
+
+}
+
+const removeUser = (id)=>{
+    const index = users.findIndex((user)=> user.id === id)
+    if(index === -1){
+        return undefined
+    }
+
+    return users.splice(index, 1)[0]
 }
 
 
+
+const getUser = (id)=>{
+    const user = users.find((user)=> user.id === id)
+    if(!user)
+    {
+        return undefined
+    }
+    return user
+}
+
+const getUsersInRoom = (room)=>{
+    room = room.trim().toLowerCase()
+    return users.filter((user)=> user.room === room)
+}
+
+//testing
 // addUser({id:11, username:'raj', room:'romm1'})
 // addUser({id:12, username:'raj', room:'room2'})
-// addUser({id:12, username:'rajnish', room:'room1'})
-// addUser({id:12, username:'rajnish', room:'room1'})
-// addUser({id:12, username:'raj', room:'room1'})
-// addUser({id:12, username:'raj', room:'room2'})
-// addUser({id:12, username:'raj', room:'room2'})
+// addUser({id:13, username:'rajnish', room:'room1'})
+// addUser({id:14, username:'rajnish', room:'room1'})
+// addUser({id:15, username:'raj', room:'room1'})
+// addUser({id:16, username:'raj', room:'room2'})
+// addUser({id:17, username:'raj', room:'room2'})
 
-// console.log(users)
+//  console.log(users)
+
+// console.log(removeUser(11))
+//console.log(users)
+
+//console.log(getUser(11))
+
+//console.log(getUsersInRoom('room3'))
