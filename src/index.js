@@ -10,14 +10,28 @@ const io = socketio(server)
 
 const port = process.env.PORT || 3000
 const publicDirectoryPath = path.join(__dirname, '../public')
+const {addUser, removeUser, getUser, getUsersInRoom} = require('./utils/user')
+
 
 app.use(express.static(publicDirectoryPath))
 
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
-     io.emit('message', generateMessage('Welecome! new user connected'))
-    // socket.broadcast.emit('welcome', 'A new user has joined')
    
+    socket.on('join', (options, callback)=>{
+
+      const {error, user} =  addUser({id: socket.id, ...options})
+      if(error){
+          return callback(error)
+      }
+      
+      socket.join(user.room)
+      socket.emit('message', generateMessage('Welcome!'))
+      socket.broadcast.to(user.room).emit('message', generateMessage(user.username + ' has joined!'))
+      callback()
+
+    })
+
     socket.on('sendMessage', (message, callback) => {
         const filter = new Filter()
 
@@ -34,13 +48,14 @@ io.on('connection', (socket) => {
         callback()
     })
 
-    socket.on('join', ({username, room})=>{
-        socket.join(room)
-        socket.to(room).emit('message', generateMessage('Welecome!'))
-        socket.broadcast.to(room).emit('message', generateMessage( username + ' has joined'))
-    })
     socket.on('disconnect', ()=>{
-        io.emit('quit', generateMessage('A user has left the chat'))
+        const user = removeUser(socket.id)
+
+        if(user){
+            io.to(user.room).emit('message', generateMessage(user.username + ' has left'))
+        }
+
+        //io.emit('quit', generateMessage('A user has left the chat'))
     })
 })
 

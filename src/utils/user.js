@@ -27,7 +27,7 @@ const addUser = ({id, username, room})=>{
     //store user
     const user = {id, username, room}
     users.push(user)
-    return {users}
+    return {user}
 
 }
 
@@ -56,6 +56,12 @@ const getUsersInRoom = (room)=>{
     return users.filter((user)=> user.room === room)
 }
 
+module.exports={
+    addUser,
+    removeUser,
+    getUser,
+    getUsersInRoom
+}
 //testing
 // addUser({id:11, username:'raj', room:'romm1'})
 // addUser({id:12, username:'raj', room:'room2'})
