@@ -26,8 +26,8 @@ io.on('connection', (socket) => {
       }
       
       socket.join(user.room)
-      socket.emit('message', generateMessage('Welcome!'))
-      socket.broadcast.to(user.room).emit('message', generateMessage(user.username + ' has joined!'))
+      socket.emit('message', generateMessage(user.username, 'Welcome!'))
+      socket.broadcast.to(user.room).emit('message', generateMessage(user.username, user.username + ' has joined!'))
       callback()
 
     })
@@ -38,13 +38,25 @@ io.on('connection', (socket) => {
         if(filter.isProfane(message)){
             return callback('profinity is not allowed')
         }
+        const user = getUser(socket.id)
+        if(!user){
+            return callback('invalid request')
+        }
 
-        io.emit('message', generateMessage(message))
-        callback(' successfully')
+        //io.emit('message', generateMessage(message))
+        socket.emit('message', generateMessage(user.username,message))
+        socket.broadcast.to(user.room).emit('message', generateMessage(user.username,message))
+        callback()
     })
 
     socket.on('send-location', (position, callback)=>{
-        io.emit('location', generateLocationMessage('https://google.com/maps?q='+position.latitude + ',' +position.longitude))
+        const user = getUser(socket.id)
+        if(!user){
+            return callback('invalid request/user')
+        }
+
+        socket.emit('location', generateLocationMessage(user.username, 'https://google.com/maps?q='+position.latitude + ',' +position.longitude))
+        socket.broadcast.to(user.room).emit('location', generateLocationMessage(user.username, 'https://google.com/maps?q='+position.latitude + ',' +position.longitude))
         callback()
     })
 
@@ -52,7 +64,7 @@ io.on('connection', (socket) => {
         const user = removeUser(socket.id)
 
         if(user){
-            io.to(user.room).emit('message', generateMessage(user.username + ' has left'))
+            io.to(user.room).emit('message', generateMessage(user.username, user.username + ' has left'))
         }
 
         //io.emit('quit', generateMessage('A user has left the chat'))
