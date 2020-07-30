@@ -3,68 +3,85 @@ const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
 const Filter = require('bad-words')
-const {generateMessage, generateLocationMessage} = require('./utils/messages')
+const { generateMessage, generateLocationMessage } = require('./utils/messages')
 const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
 
 const port = process.env.PORT || 3000
 const publicDirectoryPath = path.join(__dirname, '../public')
-const {addUser, removeUser, getUser, getUsersInRoom} = require('./utils/user')
+const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/user')
 
 
 app.use(express.static(publicDirectoryPath))
 
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
-   
-    socket.on('join', (options, callback)=>{
 
-      const {error, user} =  addUser({id: socket.id, ...options})
-      if(error){
-          return callback(error)
-      }
-      
-      socket.join(user.room)
-      socket.emit('message', generateMessage(user.username, 'Welcome!'))
-      socket.broadcast.to(user.room).emit('message', generateMessage(user.username, user.username + ' has joined!'))
-      callback()
+    socket.on('join', (options, callback) => {
+
+        const { error, user } = addUser({ id: socket.id, ...options })
+        if (error) {
+            return callback(error)
+        }
+
+        socket.join(user.room)
+        socket.emit('message', generateMessage(user.username, 'Welcome!'))
+        socket.broadcast.to(user.room).emit('message', generateMessage(user.username, user.username + ' has joined!'))
+
+        io.to(user.room).emit('roomData', {
+            room: user.room,
+            users: getUsersInRoom(user.room)
+
+        })
+
+
+        // socket.broadcast.to(room).emit('roomData', data)
+
+
+        callback()
 
     })
 
     socket.on('sendMessage', (message, callback) => {
         const filter = new Filter()
 
-        if(filter.isProfane(message)){
+        if (filter.isProfane(message)) {
             return callback('profinity is not allowed')
         }
         const user = getUser(socket.id)
-        if(!user){
+        if (!user) {
             return callback('invalid request')
         }
 
         //io.emit('message', generateMessage(message))
-        socket.emit('message', generateMessage(user.username,message))
-        socket.broadcast.to(user.room).emit('message', generateMessage(user.username,message))
+        socket.emit('message', generateMessage(user.username, message))
+        socket.broadcast.to(user.room).emit('message', generateMessage(user.username, message))
         callback()
     })
 
-    socket.on('send-location', (position, callback)=>{
+    socket.on('send-location', (position, callback) => {
         const user = getUser(socket.id)
-        if(!user){
+        if (!user) {
             return callback('invalid request/user')
         }
 
-        socket.emit('location', generateLocationMessage(user.username, 'https://google.com/maps?q='+position.latitude + ',' +position.longitude))
-        socket.broadcast.to(user.room).emit('location', generateLocationMessage(user.username, 'https://google.com/maps?q='+position.latitude + ',' +position.longitude))
+        socket.emit('location', generateLocationMessage(user.username, 'https://google.com/maps?q=' + position.latitude + ',' + position.longitude))
+        socket.broadcast.to(user.room).emit('location', generateLocationMessage(user.username, 'https://google.com/maps?q=' + position.latitude + ',' + position.longitude))
         callback()
     })
 
-    socket.on('disconnect', ()=>{
+
+    socket.on('disconnect', () => {
         const user = removeUser(socket.id)
 
-        if(user){
+        if (user) {
             io.to(user.room).emit('message', generateMessage(user.username, user.username + ' has left'))
+            io.to(user.room).emit('roomData', {
+                room: user.room,
+                users: getUsersInRoom(user.room)
+    
+            })
         }
 
         //io.emit('quit', generateMessage('A user has left the chat'))
